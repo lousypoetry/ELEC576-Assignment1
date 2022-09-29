@@ -10,6 +10,7 @@ def generate_data():
     '''
     np.random.seed(0)
     X, y = datasets.make_moons(200, noise=0.20)
+    print(X)
     return X, y
 
 def plot_decision_boundary(pred_func, X, y):
@@ -73,10 +74,17 @@ class NeuralNetwork(object):
         :param type: Tanh, Sigmoid, or ReLU
         :return: activations
         '''
-
         # YOU IMPLMENT YOUR actFun HERE
+        if type == "tanh":
+             a = np.tanh(z)
+        elif type == "sigmoid":
+             a = 1 / (1 + np.exp(-z))
+        elif type == "relu":
+             a = np.maximum(z, 0)
+        else:
+             a = -1
 
-        return None
+        return a
 
     def diff_actFun(self, z, type):
         '''
@@ -87,8 +95,20 @@ class NeuralNetwork(object):
         '''
 
         # YOU IMPLEMENT YOUR diff_actFun HERE
+        if type == "tanh":
+             a = np.tanh(z)
+             diff_a = 1 - np.power(a, 2)
+        elif type == "sigmoid":
+             a = 1 / (1 + np.exp(-z))
+             diff_a = a*(1 - a)
+        elif type == "relu":
+             a = np.maximum(z, 0)
+             diff_a = 1 if a > 0 else 0
+        else:
+             diff_a = -1
 
-        return None
+        return diff_a
+
 
     def feedforward(self, X, actFun):
         '''
@@ -99,13 +119,19 @@ class NeuralNetwork(object):
         :return:
         '''
 
-        # YOU IMPLEMENT YOUR feedforward HERE
+        def softmax(X):
+            e_X = np.exp(X - np.max(X))
+            return e_X / e_X.sum()
 
-        # self.z1 =
-        # self.a1 =
-        # self.z2 =
-        # self.probs =
+
+        # YOU IMPLEMENT YOUR feedforward HERE
+        self.z1 = np.dot(self.W1, X) + self.b1
+        self.a1 = actFun(self.z1)
+        self.z2 = np.dot(self.W2, self.a1) + self.b2
+        self.probs = softmax(self.z2)
         return None
+
+
 
     def calculate_loss(self, X, y):
         '''
@@ -120,7 +146,7 @@ class NeuralNetwork(object):
 
         # YOU IMPLEMENT YOUR CALCULATION OF THE LOSS HERE
 
-        # data_loss =
+        data_loss = -np.sum(y*np.log(self.probs))
 
         # Add regulatization term to loss (optional)
         data_loss += self.reg_lambda / 2 * (np.sum(np.square(self.W1)) + np.sum(np.square(self.W2)))
@@ -192,10 +218,10 @@ class NeuralNetwork(object):
         plot_decision_boundary(lambda x: self.predict(x), X, y)
 
 def main():
-    # # generate and visualize Make-Moons dataset
-    # X, y = generate_data()
-    # plt.scatter(X[:, 0], X[:, 1], s=40, c=y, cmap=plt.cm.Spectral)
-    # plt.show()
+    # generate and visualize Make-Moons dataset
+     X, y = generate_data()
+     plt.scatter(X[:, 0], X[:, 1], s=40, c=y, cmap=plt.cm.Spectral)
+     plt.show()
 
     # model = NeuralNetwork(nn_input_dim=2, nn_hidden_dim=3 , nn_output_dim=2, actFun_type='tanh')
     # model.fit_model(X,y)
